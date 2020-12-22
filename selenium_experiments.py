@@ -14,7 +14,7 @@ desiredCapabilities['goog:loggingPrefs'] = { 'browser':'ALL' }
 # Pack options to load the Adblock extension.
 # This needs to be either abstracted or automated.
 chrome_options = Options()
-chrome_options.add_argument('load-extension=/Users/Johnny/AppData/Local/Google/Chrome/User Data/Default/Extensions/gighmmpiobklfepjocnamgkkbiglidom/4.25.1_0/')
+chrome_options.add_argument('load-extension=path_to_adblock')
 
 # Load Chrome WebDriver.
 driver = webdriver.Chrome(desired_capabilities=desiredCapabilities, options=chrome_options)
