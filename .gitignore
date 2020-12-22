@@ -1,3 +1,6 @@
 # Visual Studio Code workspace
 workspace*
 .vscode/
+
+# Ignore Selenium logs
+debug.log
