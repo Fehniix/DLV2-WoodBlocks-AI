@@ -1,65 +1,65 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.options import Options
 import time
-import logging as logger
+import chrome_driver
+import msedge_driver
+import pyautogui
 
-# Default logger level (root) is set to WARNING. `logging` ignores any level below it.
-logger.root.setLevel(level=logger.NOTSET)
+ENABLE_ADBLOCK = False
+BROWSER_TO_USE = 0
+MATRIX_LENGTH = 18
+INITIAL_MATRIX = [[0 for x in range(MATRIX_LENGTH)] for y in range(MATRIX_LENGTH)] 
+SHAPE_0 = None
+SHAPE_1 = None
+SHAPE_2 = None
 
-# POST over a JavaScript script to the current tab and return the readyState
-def getPageState(driver):        
-    return driver.execute_script('return document.readyState')
+def getShapes():
+	global SHAPE_0
+	global SHAPE_1
+	global SHAPE_2
+	
+	SHAPE_0 = driver.execute_script("return PlayState.shapes[0].state")
+	SHAPE_1 = driver.execute_script("return PlayState.shapes[1].state")
+	SHAPE_2 = driver.execute_script("return PlayState.shapes[2].state")
 
-def getAvailableShapes(driver):
-	return driver.execute_script('(() => {const shapes = PlayState.shapes; return shapes;})()')
+def getPageState(driver): 
+	return driver.execute_script("return document.readyState;") == 'complete'
 
-# goog:loggingPrefs allows for access to console logs.
-desiredCapabilities = DesiredCapabilities.CHROME
-desiredCapabilities['goog:loggingPrefs'] = { 'browser':'ALL' }
+if BROWSER_TO_USE == 0:
+	driver = chrome_driver.createChromeDriver(ENABLE_ADBLOCK)
+elif BROWSER_TO_USE == 1:
+	driver = msedge_driver.createMSEdgeDriver(ENABLE_ADBLOCK)
 
-# Pack options to load the Adblock extension.
-# This needs to be either abstracted or automated.
-chrome_options = Options()
-chrome_options.add_argument('load-extension=/Users/Johnny/AppData/Local/Google/Chrome/User Data/Default/Extensions/gighmmpiobklfepjocnamgkkbiglidom/4.25.1_0/')
-
-# Load Chrome WebDriver.
-driver = webdriver.Chrome(desired_capabilities=desiredCapabilities, options=chrome_options)
-
-# Wait for Adblock to show their "welcome" tab...
-WebDriverWait(driver, 2)
-
-# switch to it, close it and switch target window back to first.
-driver.switch_to.window(driver.window_handles[1])
-driver.close()
-driver.switch_to.window(driver.window_handles[0])
+if ENABLE_ADBLOCK:
+	# Wait for Adblock to show their "welcome" tab...
+	WebDriverWait(driver, 2)
+	# switch to it, close it and switch target window back to first.
+	driver.switch_to_window(driver.window_handles[1])
+	driver.close()
+	driver.switch_to_window(driver.window_handles[0])
 
 # Load the game page.
 driver.get("https://games.gamesplaza.com/ext/distribution/wood_blocks/index.html?dist.version=2&v1")
+driver.execute_script('R.playerData.tutorialCompleted = true;') #Just skip this f*****g tutorial
+
+time.sleep(6)
 
 # Sleep until the document is ready.
-while(getPageState(driver) != 'complete'):
+while(not getPageState(driver)):
 	time.sleep(0.050)
-
-# Let's not go through the tutorial each single time, ay?
-# No, seriously, set the tutorialCompleted property to true so that the tutorial doesn't fire.
-driver.execute_script('R.playerData.tutorialCompleted = true;')
-
-# Wait for game to load
-time.sleep(7)
 
 # Start the game!
 driver.execute_script('game.state.start(\'play\')')
 
-time.sleep(0.5)
-print(getAvailableShapes(driver))
+time.sleep(2)
+
+getShapes()
+
+print(SHAPE_0)
+
+pyautogui.getWindowsWithTitle("Wood Blocks")[0].maximize()
 
 # Dumb logging. Needs to ideally be a thread continuously polling for logs.
-debug = False
-while(debug):
-	for entry in driver.get_log('browser'):
-		print(entry)
-	time.sleep(100)
+#while(True):
+#	for entry in driver.get_log('browser'):
+#		print(entry)
+#	time.sleep(100)
+

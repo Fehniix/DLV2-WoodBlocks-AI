@@ -4,3 +4,6 @@ workspace*
 
 # Ignore Selenium logs
 debug.log
+
+# Ignore cache
+__pycache__/
