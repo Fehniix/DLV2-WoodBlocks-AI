@@ -15,7 +15,7 @@ def getPageState(driver):
     return driver.execute_script('return document.readyState')
 
 def getAvailableShapes(driver):
-	return driver.execute_script('return PlayState.shapes;')
+	return driver.execute_script('(() => {const shapes = PlayState.shapes; return shapes;})()')
 
 # goog:loggingPrefs allows for access to console logs.
 desiredCapabilities = DesiredCapabilities.CHROME
@@ -53,6 +53,9 @@ time.sleep(7)
 
 # Start the game!
 driver.execute_script('game.state.start(\'play\')')
+
+time.sleep(0.5)
+print(getAvailableShapes(driver))
 
 # Dumb logging. Needs to ideally be a thread continuously polling for logs.
 debug = False
