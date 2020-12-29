@@ -7,3 +7,5 @@ debug.log
 
 # Ignore cache
 __pycache__/
+/.vs/DLV2-WoodBlocks-AI/v16/.suo
+/.vs
