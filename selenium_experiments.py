@@ -3,19 +3,36 @@ import time
 import chrome_driver
 import msedge_driver
 import pyautogui
+from Shape import Shape
+import re
 
 ENABLE_ADBLOCK = True
-BROWSER_TO_USE = 1
+BROWSER_TO_USE = 0
 MATRIX_LENGTH = 18
-INITIAL_MATRIX = [[0 for x in range(MATRIX_LENGTH)] for y in range(MATRIX_LENGTH)] 
+INITIAL_MATRIX = [[0 for x in range(MATRIX_LENGTH)] for y in range(MATRIX_LENGTH)]
 
 def getShape(x):
-	SHAPE = {} 
+	SHAPE = {}
 	SHAPE["matrix"] = driver.execute_script("return PlayState.shapes[" + str(x) + "].state")
 	SHAPE["startX"] = driver.execute_script("return PlayState.shapes[" + str(x) + "].startX")
 	SHAPE["startY"] = driver.execute_script("return PlayState.shapes[" + str(x) + "].startY")
 	
 	return SHAPE
+
+def getSimpleShape(index):
+	# Script to run to get the basic Shape info
+	_script = '''
+		return {{
+			state: PlayState.shapes[{0}].state,
+			startX: PlayState.shapes[{0}].startX,
+			startY: PlayState.shapes[{0}].startY
+		}};
+	'''.format(index)
+
+	# Executing scripts
+	rawShape = driver.execute_script(_script)
+
+	return Shape(rawShape)
 
 def getPageState(driver): 
 	return driver.execute_script("return document.readyState;") == 'complete'
@@ -70,6 +87,9 @@ driver.execute_script('game.state.start(\'play\')')
 
 time.sleep(2)
 
+# Test simple shape
+print(getSimpleShape(0))
+
 dict_blocksPos = {
 	2 : [abs_x + canvasSizeX - 50, abs_y + canvasSizeY + 30],
 	1 : [abs_x + canvasSizeX - 210, abs_y + canvasSizeY + 30],
@@ -84,10 +104,4 @@ dict_mapPos = {
 pyautogui.moveTo(abs_x + getShape(1)["startX"], abs_y + getShape(1)["startY"])
 pyautogui.dragTo(dict_mapPos[0][0], dict_mapPos[0][1], button='left')
 
-while True:
-	continue
-
-
-#getShapes()
-
-#sys.exit(0)
+input()
