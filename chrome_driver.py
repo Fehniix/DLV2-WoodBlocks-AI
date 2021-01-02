@@ -13,6 +13,8 @@ def createChromeDriver():
 	# Pack options to load the Adblock extension.
 	# This needs to be either abstracted or automated.
 	chrome_options = Options()
+	chrome_options.add_experimental_option("useAutomationExtension", False)
+	chrome_options.add_experimental_option("excludeSwitches",["enable-automation"])
 
 	# Load Chrome WebDriver.
 	driver = webdriver.Chrome(desired_capabilities=desiredCapabilities, options=chrome_options)
