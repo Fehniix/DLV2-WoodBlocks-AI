@@ -12,10 +12,12 @@ ENABLE_ADBLOCK = True
 
 # 0 - Google Chrome (default if .env is not found)
 # 1 - MSEdge
-BROWSER_TO_USE = os.getenv('BROWSER_TO_USE') or 0
+BROWSER_TO_USE = os.getenv('BROWSER_TO_USE') or 'chrome'
 
 MATRIX_ORIGIN = (154, 58)
 CELL_SIZE = 58
+
+driver = None
 
 def getShape(x):
 	SHAPE = {}
@@ -55,7 +57,7 @@ def placeShapeToMatrix(shapeIndex, x, y):
 	''' % (shapeIndex, coords.x, coords.y)
 
 def getPageState(driver): 
-	return driver.execute_script("return document.readyState;") == 'complete'
+	return driver.execute_script("return window.gameLoaded;") == True
 
 def deleteAllAds():
 	driver.execute_script('''
@@ -71,33 +73,37 @@ def deleteAllAds():
 		toRemove_2.remove();
 	''')
 
-if BROWSER_TO_USE == 0:
+if BROWSER_TO_USE == 'chrome':
 	driver = chrome_driver.createChromeDriver()
-elif BROWSER_TO_USE == 1:
+elif BROWSER_TO_USE == 'msedge':
 	driver = msedge_driver.createMSEdgeDriver()
 
 # maximize the browser window so that you can get the absolute x and y based on the window inner and outer heights
 driver.maximize_window()
 
-# Load the game page.
+# Load the game page. WebDriver waits for page load completion
 driver.get("https://games.gamesplaza.com/ext/distribution/wood_blocks/index.html?dist.version=2&v1")
-driver.execute_script('R.playerData.tutorialCompleted = true;') #Just skip this f*****g tutorial
 
-# We can't get webpage completed status so, we use classic time.sleep
-time.sleep(4)
+# Inject code in onload event
+driver.execute_script('''
+	window.proto = LoadState.loadComplete.prototype; 
+	LoadState.loadComplete = () => {{ 
+		proto.constructor(); 
+		window.gameLoaded = true; 
+	}};
+''')
 
-if ENABLE_ADBLOCK:
-	deleteAllAds()
+# Skip tutorial
+driver.execute_script('R.playerData.tutorialCompleted = true;')
 
 # Sleep until the document is ready.
 while(not getPageState(driver)):
 	time.sleep(0.050)
 
+if ENABLE_ADBLOCK:
+	deleteAllAds()
+
 # Start the game!
 driver.execute_script('game.state.start(\'play\')')
-
-time.sleep(2)
-
-
 
 input()
