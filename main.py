@@ -42,19 +42,24 @@ def getSimpleShape(index):
 
 def getGameMatrixCoordinates(x, y):
 	return driver.execute_script('''
-		const cell = PlayState.well.cells[x][y]; 
-		return {{x: cell.position.x, y: cell.position.y}};
-		''')
+				const cell = PlayState.well.cells[{0}][{1}]; 
+				return {{x: cell.position.x, y: cell.position.y}};
+			'''.format(x, y))
 
-def placeShapeToMatrix(shapeIndex, x, y):
-	coords = getGameMatrixCoordinates(x, y);
+def placeShapeOnMatrix(shapeIndex, x, y):
+	coords = getGameMatrixCoordinates(x, y)
 	
 	placeScript = '''
-    PlayState.shapes[{0}].setPosition({1}, {2});
-    PlayState.shapes[{0}].parent.scale = {{x: 1, y: 1, type: 25}};
-    PlayState.well.tryAddShape(PlayState.shapes[shapeIndex]);
-    PlayState.existsShapes--;
-	''' % (shapeIndex, coords.x, coords.y)
+		PlayState.shapes[{0}].setPosition({1}, {2});
+		PlayState.shapes[{0}].parent.scale = {{x: 1, y: 1, type: 25}};
+		PlayState.well.tryAddShape(PlayState.shapes[{0}]);
+		PlayState.existsShapes--;
+	'''.format(shapeIndex, coords['x'], coords['y'])
+
+	driver.execute_script(placeScript)
+
+	# 1 second is enough for the game to correctly register shape placement on the matrix for the vast majority of devices
+	time.sleep(1.0)
 
 def getPageState(driver): 
 	return driver.execute_script("return window.gameLoaded;") == True
@@ -105,5 +110,14 @@ if ENABLE_ADBLOCK:
 
 # Start the game!
 driver.execute_script('game.state.start(\'play\')')
+
+# Wait for PlayState to be fully created
+time.sleep(0.5)
+
+# Try placing the first shape on coords (5, 5)
+placeShapeOnMatrix(0, 2, 2)
+
+
+placeShapeOnMatrix(1, 6, 6)
 
 input()
