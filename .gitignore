@@ -12,3 +12,6 @@ __pycache__/
 
 # Ignore configuration .env file
 .env
+
+# Ignore game scripts
+gameScripts/
