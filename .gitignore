@@ -9,3 +9,6 @@ debug.log
 __pycache__/
 /.vs/DLV2-WoodBlocks-AI/v16/.suo
 /.vs
+
+# Ignore configuration .env file
+.env

@@ -1,12 +1,18 @@
 import time
 import chrome_driver
 import msedge_driver
+import os
+from dotenv import load_dotenv
 from Shape import Shape
 
+# Load .env file with configuration variables which can then be read as environment variables
+load_dotenv()
+
 ENABLE_ADBLOCK = True
-BROWSER_TO_USE = 0
-MATRIX_LENGTH = 18
-INITIAL_MATRIX = [[0 for x in range(MATRIX_LENGTH)] for y in range(MATRIX_LENGTH)]
+
+# 0 - Google Chrome (default if .env is not found)
+# 1 - MSEdge
+BROWSER_TO_USE = os.getenv('BROWSER_TO_USE') or 0
 
 MATRIX_ORIGIN = (154, 58)
 CELL_SIZE = 58
@@ -21,14 +27,14 @@ def getShape(x):
 
 def getSimpleShape(index):
 	# Script to run to get the basic Shape info
-	_script = '''
+	script = '''
 		return {{
 			state: PlayState.shapes[{0}].state
 		}};
 	'''.format(index)
 
 	# Executing scripts
-	rawShape = driver.execute_script(_script)
+	rawShape = driver.execute_script(script)
 
 	return Shape(rawShape)
 
